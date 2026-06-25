@@ -12,7 +12,15 @@ from sklearn.metrics.pairwise import cosine_similarity
 # =====================================================
 # LOAD MODEL
 # =====================================================
-model = SentenceTransformer('all-MiniLM-L6-v2')
+model = None
+
+def get_model():
+    global model
+
+    if model is None:
+        model = SentenceTransformer('all-MiniLM-L6-v2')
+
+    return model
 
 # =====================================================ss
 # APP CONFIG
@@ -399,7 +407,7 @@ def upload():
         # =================================================
         # AI MATCHING
         # =================================================
-        embeddings = model.encode([jd] + resume_texts)
+        embeddings = get_model().encode([jd] + resume_texts)
 
         scores = cosine_similarity(
             [embeddings[0]],
