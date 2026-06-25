@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Login | ResumeScan AI</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+</head>
+
+<body class="auth-body">
+
+<div class="auth-wrapper">
+
+    <!-- LEFT SECTION -->
+    <div class="auth-left">
+
+        <div class="hero-badge">
+            🤖 AI Powered Recruitment
+        </div>
+
+        <h1>
+            Find Your
+            <span style="color:#a855f7;">
+                Best Candidate
+            </span>
+            <br>
+            In Seconds
+        </h1>
+
+        <p>
+            ResumeScan AI automatically analyzes resumes,
+            detects skills, ranks candidates, and helps
+            HR teams make smarter hiring decisions.
+        </p>
+
+        <div class="auth-features">
+
+            <div class="auth-feature">
+                ⚡ Instant Resume Ranking
+            </div>
+
+            <div class="auth-feature">
+                🎯 AI Skill Detection
+            </div>
+
+            <div class="auth-feature">
+                📊 Smart Match Scoring
+            </div>
+
+            <div class="auth-feature">
+                📁 Resume Parsing
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- RIGHT SECTION -->
+    <div class="auth-right">
+
+        <div class="auth-card modern-card">
+
+            <div class="login-header">
+
+                <div class="login-icon">
+                    <i class="fa-solid fa-user-shield"></i>
+                </div>
+
+                <h2>Welcome Back</h2>
+
+                <p>
+                    Login to continue screening candidates
+                </p>
+
+            </div>
+
+            <!-- FLASH MESSAGES -->
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            {% for msg in messages %}
+
+            <div class="error-msg">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                {{ msg }}
+            </div>
+
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <form method="POST">
+
+                <!-- EMAIL -->
+                <div class="modern-field">
+
+                    <label>Email Address</label>
+
+                    <div class="input-box">
+
+                        <i class="fa-solid fa-envelope"></i>
+
+                        <input
+                            type="email"
+                            name="email"
+                            placeholder="Enter your email"
+                            required>
+
+                    </div>
+
+                </div>
+
+                <!-- PASSWORD -->
+                <div class="modern-field">
+
+                    <label>Password</label>
+
+                    <div class="input-box">
+
+                        <i class="fa-solid fa-lock"></i>
+
+                        <input
+                            type="password"
+                            name="password"
+                            placeholder="Enter password"
+                            required>
+
+                    </div>
+
+                </div>
+
+                <!-- OPTIONS -->
+                <div class="login-options">
+
+                    <label class="remember-box">
+
+                        <input type="checkbox">
+
+                        Remember Me
+
+                    </label>
+
+                    <a href="#">
+                        Forgot Password?
+                    </a>
+
+                </div>
+
+                <!-- BUTTON -->
+                <button
+                    type="submit"
+                    class="modern-btn">
+
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i>
+
+                    Login
+
+                </button>
+
+            </form>
+
+            <div class="divider">
+                <span>OR</span>
+            </div>
+
+            <div class="auth-footer">
+
+                Don't have an account?
+
+                <a href="{{ url_for('signup') }}">
+                    Create Account
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

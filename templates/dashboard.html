@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Dashboard | ResumeAI</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="nav">
+
+    <a class="nav-brand" href="/">
+        <span class="dot"></span>
+        ResumeAI
+    </a>
+
+    <div class="nav-links">
+
+        <a href="/dashboard" class="active">
+            Dashboard
+        </a>
+
+        <a href="/upload">
+            Scanner
+        </a>
+
+        <a href="/logout">
+            Logout
+        </a>
+
+    </div>
+
+</nav>
+
+<!-- PAGE -->
+<div class="dashboard-page">
+
+    <!-- HERO -->
+    <div class="dashboard-hero">
+
+        <div class="hero-badge">
+            ✨ AI Recruitment Dashboard
+        </div>
+
+        <h1>
+            Welcome back,
+            <span>{{ session.user_name }}</span>
+        </h1>
+
+        <p>
+            Manage resume screening, analyze candidates,
+            and simplify hiring with AI-powered matching.
+        </p>
+
+    </div>
+
+    <!-- STATS -->
+    <div class="dashboard-grid">
+
+        <!-- CARD -->
+        <div class="dashboard-stat">
+
+            <div class="stat-top">
+                <div class="stat-icon">📄</div>
+
+                <div class="stat-badge">
+                    ACTIVE
+                </div>
+            </div>
+
+            <h2>{{ total_jds }}</h2>
+
+            <h3>Saved Job Descriptions</h3>
+
+            <p>
+                Stored job roles available
+                for instant resume matching.
+            </p>
+
+        </div>
+
+        <!-- CARD -->
+        <div class="dashboard-stat">
+
+            <div class="stat-top">
+                <div class="stat-icon">⚡</div>
+
+                <div class="stat-badge blue">
+                    AI
+                </div>
+            </div>
+
+            <h2>Smart</h2>
+
+            <h3>AI Matching Engine</h3>
+
+            <p>
+                Uses semantic similarity and
+                machine learning for ranking.
+            </p>
+
+        </div>
+
+        <!-- CARD -->
+        <div class="dashboard-stat">
+
+            <div class="stat-top">
+                <div class="stat-icon">🎯</div>
+
+                <div class="stat-badge green">
+                    AUTO
+                </div>
+            </div>
+
+            <h2>Skills</h2>
+
+            <h3>Keyword Extraction</h3>
+
+            <p>
+                Detects skills, education,
+                experience and contact details.
+            </p>
+
+        </div>
+
+    </div>
+
+    <!-- CTA -->
+    <div class="dashboard-action">
+
+        <a href="/upload" class="btn btn-primary">
+            🚀 Start Resume Screening
+        </a>
+
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Upload Resumes — ResumeAI</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="nav">
+    <a class="nav-brand" href="/">
+        <span class="dot"></span> ResumeAI
+    </a>
+
+    <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/upload" class="active">Scanner</a>
+
+        <!-- 🌙 DARK MODE BUTTON -->
+        <button onclick="toggleDarkMode()" class="btn btn-secondary" id="themeBtn">
+            🌙
+        </button>
+    </div>
+</nav>
+
+<!-- PAGE -->
+<div class="page" style="max-width:900px;">
+
+    <!-- HEADER -->
+    <div class="hero-small anim-in">
+        <div class="hero-badge">📄 Resume Screening Portal</div>
+
+        <h1>Upload & Analyze Candidates</h1>
+
+        <p>
+            Paste a Job Description, upload multiple resumes, and let AI rank
+            the best candidates instantly.
+        </p>
+    </div>
+
+    <!-- CARD -->
+    <div class="card anim-in anim-delay-1">
+
+        <div class="card-title">Resume Scanner</div>
+        <div class="card-sub">
+            Supports multiple PDF resumes with smart ranking,
+            keyword matching, and CSV export.
+        </div>
+
+        {% if error %}
+        <div class="error-msg">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data">
+
+            <!-- JOB DESCRIPTION -->
+            <div class="field">
+                <label class="field-label">Job Description</label>
+
+                {% if saved_jds %}
+                <div class="jd-controls">
+                    <select id="jd-select" onchange="loadJD(this.value)">
+                        <option value="">Load Saved JD...</option>
+                        {% for jd in saved_jds %}
+                        <option value="{{ jd.id }}">{{ jd.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+
+                <textarea
+                    name="jd"
+                    id="jd-textarea"
+                    placeholder="Paste complete job description here..."
+                    required></textarea>
+
+                <div class="save-row">
+                    <input
+                        type="text"
+                        name="save_title"
+                        placeholder="Optional: Save JD with a title">
+                </div>
+            </div>
+
+            <!-- FILE UPLOAD -->
+            <div class="field">
+                <label class="field-label">
+                    Upload Resume PDFs
+                    <span class="badge-opt">Multiple Allowed</span>
+                </label>
+
+                <div class="drop-zone" id="drop-zone">
+
+                    <input
+                        type="file"
+                        name="resumes"
+                        id="file-input"
+                        multiple
+                        accept=".pdf"
+                        required
+                        onchange="updateFileLabel(this)">
+
+                    <div class="drop-zone-icon">📂</div>
+
+                    <p><strong>Drag & Drop</strong> resumes here</p>
+                    <p>or click to browse files</p>
+
+                    <p id="file-label" class="hint">
+                        No files selected
+                    </p>
+                </div>
+            </div>
+
+            <!-- BUTTONS -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px;">
+
+                <button type="submit" class="btn btn-primary">
+                    🚀 Scan Resumes
+                </button>
+
+                <a href="/" style="text-decoration:none;">
+                    <button type="button" class="btn btn-secondary" style="width:100%;">
+                        ← Back Home
+                    </button>
+                </a>
+
+            </div>
+
+        </form>
+    </div>
+
+    <!-- FEATURES -->
+    <div class="feature-grid" style="margin-top:25px;">
+
+        <div class="feature-card anim-in anim-delay-2">
+            <div class="feature-icon">⚡</div>
+            <h3>Fast Ranking</h3>
+            <p>Instantly compare resumes with the job description.</p>
+        </div>
+
+        <div class="feature-card anim-in anim-delay-3">
+            <div class="feature-icon">🎯</div>
+            <h3>Keyword Match</h3>
+            <p>Find matched and missing skills automatically.</p>
+        </div>
+
+        <div class="feature-card anim-in anim-delay-4">
+            <div class="feature-icon">📊</div>
+            <h3>CSV Export</h3>
+            <p>Download ranked candidate reports in one click.</p>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- JS -->
+<script>
+function loadJD(id) {
+    if (!id) return;
+
+    fetch('/load_jd/' + id)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('jd-textarea').value = data.content;
+        });
+}
+
+function updateFileLabel(input) {
+    const count = input.files.length;
+    const label = document.getElementById('file-label');
+
+    if (count === 0) {
+        label.textContent = "No files selected";
+    } else {
+        label.textContent = count + " file(s) selected";
+    }
+}
+
+// Drag & Drop
+const zone = document.getElementById("drop-zone");
+
+zone.addEventListener("dragover", function(e) {
+    e.preventDefault();
+    zone.classList.add("hover");
+});
+
+zone.addEventListener("dragleave", function() {
+    zone.classList.remove("hover");
+});
+
+zone.addEventListener("drop", function(e) {
+    e.preventDefault();
+    zone.classList.remove("hover");
+
+    const files = e.dataTransfer.files;
+    document.getElementById("file-input").files = files;
+
+    updateFileLabel(document.getElementById("file-input"));
+});
+
+
+// 🌙 DARK MODE
+function toggleDarkMode() {
+    document.body.classList.toggle("dark");
+
+    let btn = document.getElementById("themeBtn");
+
+    if (document.body.classList.contains("dark")) {
+        localStorage.setItem("theme", "dark");
+        btn.innerText = "☀️";
+    } else {
+        localStorage.setItem("theme", "light");
+        btn.innerText = "🌙";
+    }
+}
+
+// Load theme
+window.onload = function () {
+    let btn = document.getElementById("themeBtn");
+
+    if (localStorage.getItem("theme") === "dark") {
+        document.body.classList.add("dark");
+        if (btn) btn.innerText = "☀️";
+    }
+};
+</script>
+
+</body>
+</html>

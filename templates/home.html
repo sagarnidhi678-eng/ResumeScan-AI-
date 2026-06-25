@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Resume Scanner — Home</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="nav">
+
+    <a class="nav-brand" href="/">
+        <span class="dot"></span>
+        ResumeScanAI
+    </a>
+
+    <div class="nav-links">
+
+        <a href="/" class="active">
+            Home
+        </a>
+
+        {% if session.get("user_id") %}
+
+            <a href="/dashboard">
+                Dashboard
+            </a>
+
+            <a href="/upload">
+                Scanner
+            </a>
+
+            <a href="/logout">
+                Logout
+            </a>
+
+        {% else %}
+
+            <a href="/login">
+                Login
+            </a>
+
+            <a href="/signup">
+                Signup
+            </a>
+
+        {% endif %}
+
+        <!-- 🌙 DARK MODE -->
+        <button onclick="toggleDarkMode()"
+                class="btn btn-secondary"
+                id="themeBtn">
+            🌙
+        </button>
+
+    </div>
+
+</nav>
+
+<!-- PAGE -->
+<div class="page">
+
+    <!-- HERO -->
+    <div class="hero anim-in">
+
+        <div class="hero-badge">
+            ✦ AI-Powered Recruitment
+        </div>
+
+        <h1>
+            Find your
+            <span>best candidate</span>
+            <br>
+            in seconds
+        </h1>
+
+        <p>
+            Upload resumes and a job description.
+            AI automatically ranks applicants,
+            extracts skills, analyzes keywords,
+            and finds the best match instantly.
+        </p>
+
+        {% if session.get("user_id") %}
+
+            <a href="/upload">
+
+                <button class="btn btn-primary"
+                        style="width:auto;
+                               padding:14px 40px;
+                               font-size:17px;">
+
+                    Start Scanning →
+
+                </button>
+
+            </a>
+
+        {% else %}
+
+            <a href="/login">
+
+                <button class="btn btn-primary"
+                        style="width:auto;
+                               padding:14px 40px;
+                               font-size:17px;">
+
+                    Login to Continue →
+
+                </button>
+
+            </a>
+
+        {% endif %}
+
+    </div>
+
+    <!-- FEATURES -->
+    <div class="feature-grid">
+
+        <div class="feature-card anim-in anim-delay-1">
+
+            <div class="feature-icon">
+                ⚡
+            </div>
+
+            <h3>
+                Instant Matching
+            </h3>
+
+            <p>
+                AI-powered semantic matching
+                ranks candidates accurately.
+            </p>
+
+        </div>
+
+        <div class="feature-card anim-in anim-delay-2">
+
+            <div class="feature-icon">
+                🗂
+            </div>
+
+            <h3>
+                Saved Job Descriptions
+            </h3>
+
+            <p>
+                Store and reuse job descriptions
+                anytime.
+            </p>
+
+        </div>
+
+        <div class="feature-card anim-in anim-delay-3">
+
+            <div class="feature-icon">
+                👤
+            </div>
+
+            <h3>
+                Candidate Profiles
+            </h3>
+
+            <p>
+                Auto extracts name, email,
+                skills, education and more.
+            </p>
+
+        </div>
+
+        <div class="feature-card anim-in anim-delay-4">
+
+            <div class="feature-icon">
+                📊
+            </div>
+
+            <h3>
+                Export to CSV
+            </h3>
+
+            <p>
+                Download full candidate
+                analysis instantly.
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- DARK MODE SCRIPT -->
+<script>
+
+function toggleDarkMode() {
+
+    document.body.classList.toggle("dark");
+
+    let btn = document.getElementById("themeBtn");
+
+    if (document.body.classList.contains("dark")) {
+
+        localStorage.setItem("theme", "dark");
+        btn.innerText = "☀️";
+
+    } else {
+
+        localStorage.setItem("theme", "light");
+        btn.innerText = "🌙";
+    }
+}
+
+// LOAD SAVED THEME
+window.onload = function () {
+
+    let btn = document.getElementById("themeBtn");
+
+    if (localStorage.getItem("theme") === "dark") {
+
+        document.body.classList.add("dark");
+
+        if (btn) {
+            btn.innerText = "☀️";
+        }
+    }
+};
+
+</script>
+
+</body>
+</html>

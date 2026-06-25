@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ c.name }} | ResumeAI</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+    <a class="nav-brand" href="/">
+        <span class="dot"></span> ResumeAI
+    </a>
+
+    <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/upload">Scanner</a>
+
+        <!-- 🌙 DARK MODE -->
+        <button onclick="toggleDarkMode()" class="btn btn-secondary">
+            🌙
+        </button>
+    </div>
+</nav>
+
+<div class="profile-page">
+
+    <!-- TOP NAV ACTIONS -->
+    <div class="top-actions">
+
+        <div class="left">
+            <a href="javascript:history.back()" class="btn btn-secondary">← Back</a>
+
+            {% if index > 0 %}
+            <a href="{{ url_for('candidate', index=index-1) }}" class="btn btn-secondary">← Previous</a>
+            {% endif %}
+
+            {% if index < total - 1 %}
+            <a href="{{ url_for('candidate', index=index+1) }}" class="btn btn-secondary">Next →</a>
+            {% endif %}
+        </div>
+
+        <div class="right">
+            <span class="badge badge-blue">
+                Candidate {{ index + 1 }} / {{ total }}
+            </span>
+        </div>
+
+    </div>
+
+    <!-- HERO -->
+    <div class="profile-hero">
+
+        <div class="hero-left">
+            <div class="avatar">
+                {{ c.name[0]|upper if c.name else "?" }}
+            </div>
+
+            <div>
+                <div class="hero-name">{{ c.name or "Unknown" }}</div>
+
+                <div class="hero-meta">
+                    <span>🏅 Rank #{{ c.rank }}</span>
+
+                    {% if c.email and c.email != "Not Found" %}
+                    <span>✉ {{ c.email }}</span>
+                    {% endif %}
+
+                    {% if c.phone and c.phone != "Not Found" %}
+                    <span>📞 {{ c.phone }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="score-box">
+            <div class="score-num">{{ c.score }}%</div>
+            <div class="score-label">{{ c.label }}</div>
+        </div>
+
+    </div>
+
+    <!-- ROW 1 -->
+    <div class="grid-2">
+
+        <!-- CONTACT -->
+        <div class="info-card">
+            <div class="section-title">📌 Contact Details</div>
+
+            <div class="info-line"><strong>Name:</strong> {{ c.name }}</div>
+
+            <div class="info-line">
+                <strong>Email:</strong>
+                {% if c.email and c.email != "Not Found" %}
+                    <a href="mailto:{{ c.email }}">{{ c.email }}</a>
+                {% else %}
+                    Not Found
+                {% endif %}
+            </div>
+
+            <div class="info-line">
+                <strong>Phone:</strong>
+                {{ c.phone if c.phone and c.phone != "Not Found" else "Not Found" }}
+            </div>
+        </div>
+
+        <!-- SKILLS -->
+        <div class="info-card">
+            <div class="section-title">💡 Skills</div>
+
+            {% if c.skills %}
+            <div class="chips">
+                {% for skill in c.skills %}
+                <span class="chip chip-skill">{{ skill }}</span>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p>No skills detected.</p>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <!-- ROW 2 -->
+    <div class="grid-2">
+
+        <!-- EXPERIENCE -->
+        <div class="info-card">
+            <div class="section-title">💼 Experience</div>
+
+            {% if c.experience %}
+                {% for item in c.experience %}
+                <div class="timeline-item">{{ item }}</div>
+                {% endfor %}
+            {% else %}
+                <p>No experience found.</p>
+            {% endif %}
+        </div>
+
+        <!-- EDUCATION -->
+        <div class="info-card">
+            <div class="section-title">🎓 Education</div>
+
+            {% if c.education %}
+                {% for item in c.education %}
+                <div class="timeline-item">{{ item }}</div>
+                {% endfor %}
+            {% else %}
+                <p>No education found.</p>
+            {% endif %}
+        </div>
+
+    </div>
+
+<!-- AI INSIGHTS -->
+<div class="info-card ai-card">
+
+    <div class="section-title">
+        🤖 AI Candidate Insights
+    </div>
+
+    <div class="insight-grid">
+
+        <div class="insight-box">
+            <div class="insight-label">
+                Match Strength
+            </div>
+
+            <div class="insight-value">
+                {{ c.label }}
+            </div>
+        </div>
+
+        <div class="insight-box">
+            <div class="insight-label">
+                Experience Level
+            </div>
+
+            <div class="insight-value">
+                {{ c.experience[0] if c.experience else "Fresher" }}
+            </div>
+        </div>
+
+        <div class="insight-box">
+            <div class="insight-label">
+                Skills Detected
+            </div>
+
+            <div class="insight-value">
+                {{ c.skills|length }}
+            </div>
+        </div>
+
+    </div>
+
+    <div class="ai-summary">
+
+        {% if c.score >= 80 %}
+
+            Strong candidate profile with high relevance
+            to the uploaded job description.
+            Recommended for interview shortlist.
+
+        {% elif c.score >= 60 %}
+
+            Good candidate profile with relevant
+            technical alignment and matching skills.
+
+        {% elif c.score >= 40 %}
+
+            Average profile match.
+            Candidate may require further evaluation.
+
+        {% else %}
+
+            Low similarity detected with the
+            provided job description requirements.
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+    <!-- RESUME VIEW -->
+    <div class="resume-box">
+
+        <div class="resume-toolbar">
+
+            <div class="section-title" style="margin:0;">📄 Resume Preview</div>
+
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+
+                <a href="{{ url_for('serve_resume', filename=c.filename) }}"
+                   target="_blank"
+                   class="btn btn-primary">
+                   Open PDF
+                </a>
+
+                <a href="{{ url_for('serve_resume', filename=c.filename) }}"
+                   download="{{ c.filename }}"
+                   class="btn btn-secondary">
+                   Download
+                </a>
+
+            </div>
+        </div>
+
+        <iframe
+            class="resume-frame"
+            src="{{ url_for('serve_resume', filename=c.filename) }}">
+        </iframe>
+
+    </div>
+
+</div>
+
+<!-- JS -->
+<script>
+
+// 🌙 DARK MODE
+function toggleDarkMode() {
+    document.body.classList.toggle("dark-mode");
+    localStorage.setItem("darkMode", document.body.classList.contains("dark-mode"));
+}
+
+// LOAD MODE
+if (localStorage.getItem("darkMode") === "true") {
+    document.body.classList.add("dark-mode");
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Results | ResumeAI</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+    <div class="logo">📄 ResumeAI</div>
+
+    <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/upload">Scanner</a>
+        <a class="active">Results</a>
+
+        <!-- 🌙 DARK MODE TOGGLE -->
+        <button onclick="toggleDarkMode()" class="btn btn-secondary" style="margin-left:10px;">
+            🌙
+        </button>
+    </div>
+</nav>
+
+<div class="container results-page">
+
+{% if results and results|length > 0 %}
+
+    <!-- HEADER -->
+    <div class="page-header fade-up">
+        <h1>Resume Screening Results</h1>
+        <p>AI ranked all candidates based on job match score.</p>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-grid fade-up">
+
+        <div class="stat-card">
+            <h3>{{ results|length }}</h3>
+            <p>Total Candidates</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>{{ results[0].score }}%</h3>
+            <p>Highest Score</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>
+                {{ "%.0f"|format(
+                    results | map(attribute='score') | sum / results|length
+                ) }}%
+            </h3>
+            <p>Average Match</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>
+                {{ results | selectattr("label", "equalto", "Excellent") | list | length }}
+            </h3>
+            <p>Excellent Matches</p>
+        </div>
+
+    </div>
+
+    <!-- ACTION BAR -->
+    <div class="action-bar fade-up">
+
+        <input
+            type="text"
+            id="searchInput"
+            placeholder="🔍 Search Candidate..."
+            onkeyup="filterCards()"
+        >
+
+        <form action="/export_csv" method="POST">
+            <button type="submit" class="btn export-btn">
+                ⬇ Export CSV
+            </button>
+        </form>
+
+        <a href="/upload">
+            <button class="btn secondary-btn">
+                + New Scan
+            </button>
+        </a>
+
+    </div>
+
+    <!-- TOP CANDIDATE -->
+    <div class="winner-banner fade-up">
+        🏆 Top Candidate:
+        <strong>{{ results[0].name }}</strong>
+        — {{ results[0].score }}% Match
+    </div>
+
+    <!-- RESULTS GRID -->
+    <div class="results-grid" id="resultsGrid">
+
+        {% for r in results %}
+        <div class="candidate-card fade-up card-item"
+             data-name="{{ r.name|lower }}">
+
+            <!-- Rank -->
+            <div class="rank-badge">#{{ r.rank }}</div>
+
+            <!-- Name -->
+            <h2>{{ r.name }}</h2>
+
+            <!-- Score -->
+            <div class="score-box">
+                <span>{{ r.score }}%</span>
+                <small>{{ r.label }}</small>
+            </div>
+
+            <!-- Progress -->
+            <div class="progress-bar">
+                <div class="progress-fill"
+                     style="width: {{ r.score }}%;"></div>
+            </div>
+
+            <!-- Contact -->
+            <div class="mini-info">
+                <p>📧 {{ r.email }}</p>
+                <p>📱 {{ r.phone }}</p>
+            </div>
+
+            <!-- Skills -->
+            <div class="skills-wrap">
+                {% for skill in r.skills[:6] %}
+                <span class="skill-chip">{{ skill }}</span>
+                {% endfor %}
+            </div>
+
+            <!-- Keywords -->
+            <div class="keyword-box">
+
+                {% for kw in r.matched[:4] %}
+                <span class="match-chip">✓ {{ kw }}</span>
+                {% endfor %}
+
+                {% for kw in r.missed[:2] %}
+                <span class="miss-chip">{{ kw }}</span>
+                {% endfor %}
+
+            </div>
+
+            <!-- Button -->
+            <div class="card-actions">
+                <a href="/candidate/{{ loop.index0 }}">
+                    <button class="btn view-btn">
+                        View Profile →
+                    </button>
+                </a>
+            </div>
+
+        </div>
+        {% endfor %}
+
+    </div>
+
+{% else %}
+
+    <!-- EMPTY STATE -->
+    <div style="text-align:center; padding:60px;">
+        <h2>No Results Found</h2>
+        <p>Please upload resumes first.</p>
+        <a href="/upload">
+            <button class="btn btn-primary">Go to Scanner</button>
+        </a>
+    </div>
+
+{% endif %}
+
+</div>
+
+<!-- JS -->
+<script>
+
+function filterCards() {
+    let input = document.getElementById("searchInput").value.toLowerCase();
+    let cards = document.querySelectorAll(".card-item");
+
+    cards.forEach(card => {
+        let name = card.getAttribute("data-name");
+
+        card.style.display = name.includes(input) ? "block" : "none";
+    });
+}
+
+// 🌙 DARK MODE
+function toggleDarkMode() {
+    document.body.classList.toggle("dark-mode");
+    localStorage.setItem("darkMode", document.body.classList.contains("dark-mode"));
+}
+
+// LOAD MODE
+if (localStorage.getItem("darkMode") === "true") {
+    document.body.classList.add("dark-mode");
+}
+
+</script>
+
+</body>
+</html>
