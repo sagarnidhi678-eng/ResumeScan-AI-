@@ -28,8 +28,13 @@ def get_model():
 app = Flask(__name__)
 app.secret_key = "resume_scanner_secret_2024"
 
-UPLOAD_FOLDER = "uploads"
-DB_PATH = "resume_scanner.db"
+#UPLOAD_FOLDER = "uploads"
+#DB_PATH = "resume_scanner.db"
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
+DB_PATH = os.path.join(BASE_DIR, "resume_scanner.db")
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
