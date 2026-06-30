@@ -243,11 +243,15 @@ def signup():
 
             flash("Account created successfully")
             return redirect(url_for("login"))
+        
+        except Exception as e:
+            print("SIGNUP ERROR:", e)
+            raise
 
-        except sqlite3.IntegrityError:
+        #except sqlite3.IntegrityError:
 
-            flash("Email already exists")
-            return redirect(url_for("signup"))
+         #  flash("Email already exists")
+          # return redirect(url_for("signup"))
 
     return render_template("signup.html")
 
