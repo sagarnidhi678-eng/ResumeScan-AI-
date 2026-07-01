@@ -76,9 +76,14 @@
             </div>
         </div>
 
-        <div class="score-box">
+        <div class="score-box" style="display:flex; flex-direction:column; align-items:center; gap:6px;">
             <div class="score-num">{{ c.score }}%</div>
             <div class="score-label">{{ c.label }}</div>
+            <select onchange="updateStatus({{ c.id }}, this.value, this)" class="status-select select-{{ c.status|lower }}" style="padding:6px 12px; font-size:12px; width:auto; border-radius:8px; height:auto; margin-top:5px; cursor:pointer; font-weight:600; text-align:center;">
+                <option value="Screened" {% if c.status == 'Screened' or not c.status %}selected{% endif %}>📄 Screened</option>
+                <option value="Shortlisted" {% if c.status == 'Shortlisted' %}selected{% endif %}>✅ Shortlisted</option>
+                <option value="Rejected" {% if c.status == 'Rejected' %}selected{% endif %}>❌ Rejected</option>
+            </select>
         </div>
 
     </div>

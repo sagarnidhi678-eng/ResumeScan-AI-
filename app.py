@@ -108,9 +108,16 @@ def init_db():
                 matched TEXT,
                 missed TEXT,
                 filename TEXT,
+                status TEXT DEFAULT 'Screened',
                 FOREIGN KEY (scan_id) REFERENCES scans (id) ON DELETE CASCADE
             )
         """)
+
+        # Add column dynamically if table exists but doesn't have it
+        try:
+            conn.execute("ALTER TABLE candidates ADD COLUMN status TEXT DEFAULT 'Screened'")
+        except sqlite3.OperationalError:
+            pass
 
         conn.commit()
 
@@ -729,6 +736,24 @@ def export_csv(scan_id):
             f"attachment; filename=results_scan_{scan_id}.csv"
         }
     )
+
+# =====================================================
+# CANDIDATE STATUS UPDATE
+# =====================================================
+@app.route("/candidate/<int:candidate_id>/status", methods=["POST"])
+@login_required
+def update_candidate_status(candidate_id):
+    data = request.get_json() or {}
+    new_status = data.get("status", "Screened")
+
+    if new_status not in ["Screened", "Shortlisted", "Rejected"]:
+        return jsonify({"success": False, "error": "Invalid status"}), 400
+
+    with get_db() as conn:
+        conn.execute("UPDATE candidates SET status=? WHERE id=?", (new_status, candidate_id))
+        conn.commit()
+
+    return jsonify({"success": True, "status": new_status})
 
 # =====================================================
 # MAIN

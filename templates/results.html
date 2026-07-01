@@ -187,6 +187,16 @@
 
             </div>
 
+            <!-- Status Dropdown -->
+            <div style="margin-top:12px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:12px; font-weight:700; color:var(--muted);">Status:</span>
+                <select onchange="updateStatus({{ r.id }}, this.value, this)" class="status-select select-{{ r.status|lower }}" style="padding:6px 10px; font-size:12px; width:auto; border-radius:8px; height:auto; margin:0; cursor:pointer; font-weight:600;">
+                    <option value="Screened" {% if r.status == 'Screened' or not r.status %}selected{% endif %}>📄 Screened</option>
+                    <option value="Shortlisted" {% if r.status == 'Shortlisted' %}selected{% endif %}>✅ Shortlisted</option>
+                    <option value="Rejected" {% if r.status == 'Rejected' %}selected{% endif %}>❌ Rejected</option>
+                </select>
+            </div>
+
             <!-- Button -->
             <div class="card-actions">
                 <a href="/candidate/{{ r.id }}">
@@ -419,6 +429,23 @@ function openComparisonModal() {
 
 function closeComparisonModal() {
     document.getElementById("comparison-modal").classList.remove("active");
+}
+
+function updateStatus(candidateId, newStatus, selectElement) {
+    fetch(`/candidate/${candidateId}/status`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status: newStatus })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            selectElement.className = `status-select select-${newStatus.toLowerCase()}`;
+        }
+    })
+    .catch(err => console.error("Error updating status:", err));
 }
 
 // Bind checkbox listeners
