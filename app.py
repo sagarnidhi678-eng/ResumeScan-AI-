@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify, Response, session, flash
-import os, re, csv, io, sqlite3
+import os, re, csv, io, sqlite3, json
 from functools import wraps
 
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -46,6 +46,7 @@ if not os.path.exists(UPLOAD_FOLDER):
 # =====================================================
 def get_db():
     conn = sqlite3.connect(DB_PATH)
+    conn.execute("PRAGMA foreign_keys = ON;")
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -72,6 +73,42 @@ def init_db():
                 content TEXT,
                 user_id INTEGER,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        # SCANS TABLE
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS scans (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                jd_title TEXT,
+                jd_content TEXT,
+                user_id INTEGER,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+            )
+        """)
+
+        # CANDIDATES TABLE
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS candidates (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                scan_id INTEGER,
+                rank INTEGER,
+                name TEXT NOT NULL,
+                score REAL,
+                label TEXT,
+                color TEXT,
+                email TEXT,
+                phone TEXT,
+                linkedin TEXT,
+                github TEXT,
+                skills TEXT,
+                education TEXT,
+                experience TEXT,
+                matched TEXT,
+                missed TEXT,
+                filename TEXT,
+                FOREIGN KEY (scan_id) REFERENCES scans (id) ON DELETE CASCADE
             )
         """)
 
@@ -159,6 +196,14 @@ def extract_phone(text):
 
     m = re.search(r'(\+?\d[\d\s\-\(\)]{8,}\d)', text)
 
+    return m.group(0) if m else "Not Found"
+
+def extract_linkedin(text):
+    m = re.search(r'https?://(?:www\.)?linkedin\.com/in/[a-zA-Z0-9\-_%]+', text, re.IGNORECASE)
+    return m.group(0) if m else "Not Found"
+
+def extract_github(text):
+    m = re.search(r'https?://(?:www\.)?github\.com/[a-zA-Z0-9\-_%]+', text, re.IGNORECASE)
     return m.group(0) if m else "Not Found"
 
 def extract_skills(text):
@@ -317,10 +362,21 @@ def dashboard():
             SELECT COUNT(*) FROM job_descriptions
         """).fetchone()[0]
 
+        # Query scans for the currently logged in user
+        scans = conn.execute("""
+            SELECT s.id, s.jd_title, s.created_at, 
+                   (SELECT COUNT(*) FROM candidates WHERE scan_id = s.id) as candidate_count, 
+                   (SELECT MAX(score) FROM candidates WHERE scan_id = s.id) as max_score
+            FROM scans s
+            WHERE s.user_id = ?
+            ORDER BY s.created_at DESC
+        """, (session["user_id"],)).fetchall()
+
     return render_template(
         "dashboard.html",
         total_users=total_users,
-        total_jds=total_jds
+        total_jds=total_jds,
+        scans=scans
     )
 
 # =====================================================
@@ -451,6 +507,8 @@ def upload():
                 "color": str(color),
                 "email": str(extract_email(raw_texts[i])),
                 "phone": str(extract_phone(raw_texts[i])),
+                "linkedin": str(extract_linkedin(raw_texts[i])),
+                "github": str(extract_github(raw_texts[i])),
                 "skills": list(extract_skills(raw_texts[i])),
                 "education": list(extract_education(raw_texts[i])),
                 "experience": list(extract_experience(raw_texts[i])),
@@ -467,12 +525,44 @@ def upload():
         for i, r in enumerate(results):
             r["rank"] = i + 1
 
-        session["results"] = make_json_safe(results)
+        # Save to SQLite Database instead of session cookie to prevent overflow
+        scan_title = save_title if save_title else "Scan: " + (jd_raw[:40].strip() + "..." if len(jd_raw) > 40 else jd_raw.strip())
+        
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO scans(jd_title, jd_content, user_id)
+                VALUES (?, ?, ?)
+            """, (scan_title, jd_raw, session["user_id"]))
+            scan_id = cursor.lastrowid
 
-        return render_template(
-            "results.html",
-            results=results
-        )
+            for r in results:
+                conn.execute("""
+                    INSERT INTO candidates(
+                        scan_id, rank, name, score, label, color, email, phone, linkedin, github,
+                        skills, education, experience, matched, missed, filename
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    scan_id,
+                    r["rank"],
+                    r["name"],
+                    r["score"],
+                    r["label"],
+                    r["color"],
+                    r["email"],
+                    r["phone"],
+                    r["linkedin"],
+                    r["github"],
+                    json.dumps(r["skills"]),
+                    json.dumps(r["education"]),
+                    json.dumps(r["experience"]),
+                    json.dumps(r["matched"]),
+                    json.dumps(r["missed"]),
+                    r["filename"]
+                ))
+            conn.commit()
+
+        return redirect(url_for("view_results", scan_id=scan_id))
 
     return render_template(
         "upload.html",
@@ -480,22 +570,92 @@ def upload():
     )
 
 # =====================================================
+# RESULTS VIEW
+# =====================================================
+@app.route("/results/<int:scan_id>")
+@login_required
+def view_results(scan_id):
+    with get_db() as conn:
+        scan = conn.execute("SELECT * FROM scans WHERE id=?", (scan_id,)).fetchone()
+        if not scan:
+            flash("Scan results not found.")
+            return redirect(url_for("dashboard"))
+
+        db_results = conn.execute("""
+            SELECT * FROM candidates 
+            WHERE scan_id=? 
+            ORDER BY rank ASC
+        """, (scan_id,)).fetchall()
+
+    results = []
+    for r in db_results:
+        r_dict = dict(r)
+        r_dict["skills"] = json.loads(r_dict["skills"])
+        r_dict["education"] = json.loads(r_dict["education"])
+        r_dict["experience"] = json.loads(r_dict["experience"])
+        r_dict["matched"] = json.loads(r_dict["matched"])
+        r_dict["missed"] = json.loads(r_dict["missed"])
+        results.append(r_dict)
+
+    return render_template(
+        "results.html",
+        results=results,
+        scan_id=scan_id,
+        jd_title=scan["jd_title"]
+    )
+
+# =====================================================
+# DELETE SCAN
+# =====================================================
+@app.route("/scan/delete/<int:scan_id>", methods=["POST"])
+@login_required
+def delete_scan(scan_id):
+    with get_db() as conn:
+        conn.execute("DELETE FROM scans WHERE id=?", (scan_id,))
+        conn.commit()
+    flash("Scan deleted successfully.")
+    return redirect(url_for("dashboard"))
+
+# =====================================================
 # CANDIDATE
 # =====================================================
-@app.route("/candidate/<int:index>")
+@app.route("/candidate/<int:candidate_id>")
 @login_required
-def candidate(index):
+def candidate(candidate_id):
+    with get_db() as conn:
+        c = conn.execute("SELECT * FROM candidates WHERE id=?", (candidate_id,)).fetchone()
+        if not c:
+            return redirect(url_for("dashboard"))
 
-    results = session.get("results", [])
+        # Get all candidates in the same scan, sorted by rank
+        all_candidates = conn.execute(
+            "SELECT id FROM candidates WHERE scan_id=? ORDER BY rank ASC",
+            (c["scan_id"],)
+        ).fetchall()
 
-    if index < 0 or index >= len(results):
-        return redirect(url_for("upload"))
+    candidate_ids = [r["id"] for r in all_candidates]
+    index = candidate_ids.index(candidate_id)
+    total = len(candidate_ids)
+
+    prev_id = candidate_ids[index - 1] if index > 0 else None
+    next_id = candidate_ids[index + 1] if index < total - 1 else None
+
+    # Format candidate record as a dict and deserialize JSON fields
+    c_dict = dict(c)
+    c_dict["skills"] = json.loads(c_dict["skills"])
+    c_dict["education"] = json.loads(c_dict["education"])
+    c_dict["experience"] = json.loads(c_dict["experience"])
+    c_dict["matched"] = json.loads(c_dict["matched"])
+    c_dict["missed"] = json.loads(c_dict["missed"])
 
     return render_template(
         "candidate.html",
-        c=results[index],
+        c=c_dict,
         index=index,
-        total=len(results)
+        total=total,
+        prev_id=prev_id,
+        next_id=next_id,
+        scan_id=c["scan_id"]
     )
 
 # =====================================================
@@ -522,11 +682,15 @@ def serve_resume(filename):
 # =====================================================
 # EXPORT CSV
 # =====================================================
-@app.route("/export_csv", methods=["POST"])
+@app.route("/export_csv/<int:scan_id>", methods=["POST"])
 @login_required
-def export_csv():
-
-    results = session.get("results", [])
+def export_csv(scan_id):
+    with get_db() as conn:
+        db_results = conn.execute("""
+            SELECT * FROM candidates 
+            WHERE scan_id=? 
+            ORDER BY rank ASC
+        """, (scan_id,)).fetchall()
 
     output = io.StringIO()
     writer = csv.writer(output)
@@ -537,18 +701,22 @@ def export_csv():
         "Score",
         "Email",
         "Phone",
+        "LinkedIn",
+        "GitHub",
         "Skills"
     ])
 
-    for r in results:
-
+    for r in db_results:
+        skills = json.loads(r["skills"])
         writer.writerow([
             r["rank"],
             r["name"],
             r["score"],
             r["email"],
             r["phone"],
-            ", ".join(r["skills"])
+            r["linkedin"],
+            r["github"],
+            ", ".join(skills)
         ])
 
     output.seek(0)
@@ -558,7 +726,7 @@ def export_csv():
         mimetype="text/csv",
         headers={
             "Content-Disposition":
-            "attachment; filename=results.csv"
+            f"attachment; filename=results_scan_{scan_id}.csv"
         }
     )
 

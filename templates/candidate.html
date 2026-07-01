@@ -32,14 +32,14 @@
     <div class="top-actions">
 
         <div class="left">
-            <a href="javascript:history.back()" class="btn btn-secondary">← Back</a>
+            <a href="/results/{{ scan_id }}" class="btn btn-secondary">← Back to Results</a>
 
-            {% if index > 0 %}
-            <a href="{{ url_for('candidate', index=index-1) }}" class="btn btn-secondary">← Previous</a>
+            {% if prev_id is not none %}
+            <a href="{{ url_for('candidate', candidate_id=prev_id) }}" class="btn btn-secondary">← Previous</a>
             {% endif %}
 
-            {% if index < total - 1 %}
-            <a href="{{ url_for('candidate', index=index+1) }}" class="btn btn-secondary">Next →</a>
+            {% if next_id is not none %}
+            <a href="{{ url_for('candidate', candidate_id=next_id) }}" class="btn btn-secondary">Next →</a>
             {% endif %}
         </div>
 
@@ -105,6 +105,20 @@
                 <strong>Phone:</strong>
                 {{ c.phone if c.phone and c.phone != "Not Found" else "Not Found" }}
             </div>
+
+            {% if c.linkedin and c.linkedin != "Not Found" %}
+            <div class="info-line">
+                <strong>LinkedIn:</strong>
+                <a href="{{ c.linkedin }}" target="_blank" style="color:var(--primary); font-weight:600;">{{ c.linkedin }}</a>
+            </div>
+            {% endif %}
+
+            {% if c.github and c.github != "Not Found" %}
+            <div class="info-line">
+                <strong>GitHub:</strong>
+                <a href="{{ c.github }}" target="_blank" style="color:var(--primary); font-weight:600;">{{ c.github }}</a>
+            </div>
+            {% endif %}
         </div>
 
         <!-- SKILLS -->

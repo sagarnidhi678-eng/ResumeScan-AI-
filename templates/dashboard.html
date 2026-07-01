@@ -132,11 +132,61 @@
 
     </div>
 
+    <!-- SCAN HISTORY -->
+    <div class="card anim-in anim-delay-3" style="margin-top:40px; overflow-x: auto;">
+        <div class="card-title" style="font-size:22px; display:flex; justify-content:space-between; align-items:center;">
+            <span>📋 Scan History</span>
+            <span class="badge-opt" style="font-size:12px; padding:4px 10px; background:#ede9fe; color:var(--primary); border-radius:999px;">{{ scans|length }} Scan(s) Stored</span>
+        </div>
+        <div class="card-sub">Access your previous resume screening results.</div>
+
+        {% if scans %}
+        <table class="history-table" style="width:100%; border-collapse:collapse; text-align:left; margin-top:15px;">
+            <thead>
+                <tr style="border-bottom:2px solid var(--border); color:var(--muted); font-size:14px;">
+                    <th style="padding:12px 8px;">Job Description / Role Title</th>
+                    <th style="padding:12px 8px;">Date Scanned</th>
+                    <th style="padding:12px 8px;">Candidates</th>
+                    <th style="padding:12px 8px;">Top Match</th>
+                    <th style="padding:12px 8px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for scan in scans %}
+                <tr style="border-bottom:1px solid var(--border); font-size:15px;">
+                    <td style="padding:14px 8px;"><strong>{{ scan.jd_title }}</strong></td>
+                    <td style="padding:14px 8px; color:var(--muted); font-size:13px;">{{ scan.created_at }}</td>
+                    <td style="padding:14px 8px;"><span style="padding:4px 8px; background:#ede9fe; color:var(--primary); border-radius:8px; font-weight:700; font-size:12px;">{{ scan.candidate_count }}</span></td>
+                    <td style="padding:14px 8px;"><span style="padding:4px 8px; background:#dcfce7; color:var(--success); border-radius:8px; font-weight:700; font-size:12px;">{{ scan.max_score }}%</span></td>
+                    <td style="padding:14px 8px;">
+                        <div style="display:flex; gap:8px;">
+                            <a href="/results/{{ scan.id }}" class="btn btn-secondary" style="padding:8px 14px; font-size:12px; border-radius:10px;">
+                                👁️ View
+                            </a>
+                            <form action="/scan/delete/{{ scan.id }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this scan?');">
+                                <button type="submit" class="btn" style="padding:8px 14px; font-size:12px; border-radius:10px; background:#fef2f2; color:var(--danger); border:1px solid #fecaca; cursor:pointer;">
+                                    🗑️ Delete
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div style="text-align:center; padding:30px; color:var(--muted);">
+            <div style="font-size:40px; margin-bottom:10px;">📂</div>
+            <p>No past scans found. Start by screening some resumes!</p>
+        </div>
+        {% endif %}
+    </div>
+
     <!-- CTA -->
     <div class="dashboard-action">
 
         <a href="/upload" class="btn btn-primary">
-            🚀 Start Resume Screening
+            🚀 Start New Resume Screening
         </a>
 
     </div>

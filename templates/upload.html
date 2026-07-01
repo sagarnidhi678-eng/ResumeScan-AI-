@@ -205,6 +205,31 @@ zone.addEventListener("drop", function(e) {
 });
 
 
+// Loader Trigger
+document.querySelector('form').addEventListener('submit', function() {
+    document.getElementById('loader-overlay').classList.add('active');
+
+    const messages = [
+        "Parsing resume PDFs...",
+        "Extracting education & contact details...",
+        "Identifying candidate skills & experience...",
+        "Initializing AI semantic matching model...",
+        "Calculating similarity match scores...",
+        "Ranking candidates by job relevance...",
+        "Generating keywords and gap analysis..."
+    ];
+    let msgIdx = 0;
+    const msgEl = document.getElementById('loader-message');
+    setInterval(() => {
+        msgIdx = (msgIdx + 1) % messages.length;
+        msgEl.style.opacity = 0;
+        setTimeout(() => {
+            msgEl.textContent = messages[msgIdx];
+            msgEl.style.opacity = 1;
+        }, 200);
+    }, 2200);
+});
+
 // 🌙 DARK MODE
 function toggleDarkMode() {
     document.body.classList.toggle("dark");
@@ -230,6 +255,15 @@ window.onload = function () {
     }
 };
 </script>
+
+<!-- SCREENING LOADER OVERLAY -->
+<div class="loader-overlay" id="loader-overlay">
+    <div class="loader-container">
+        <div class="loader-spinner"></div>
+        <h2 id="loader-title">Screening Engine Active</h2>
+        <p id="loader-message" style="transition: opacity 0.2s ease;">Parsing resume PDFs...</p>
+    </div>
+</div>
 
 </body>
 </html>

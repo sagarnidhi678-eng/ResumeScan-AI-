@@ -1890,3 +1890,254 @@ select:focus{
 
     margin-bottom:20px;
 }
+
+/* =====================================================
+   ADDITIONAL ENHANCEMENTS: LOADER, COMPARISON, HISTORY
+===================================================== */
+
+/* SCREENING LOADER OVERLAY */
+.loader-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+.loader-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+.loader-container {
+    text-align: center;
+    max-width: 450px;
+    padding: 30px;
+}
+.loader-spinner {
+    width: 60px;
+    height: 60px;
+    border: 5px solid rgba(139, 92, 246, 0.1);
+    border-top: 5px solid var(--primary);
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+#loader-title {
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 10px;
+    color: #111827;
+}
+#loader-message {
+    font-size: 15px;
+    color: var(--muted);
+}
+
+/* HISTORY TABLE */
+.history-table th {
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+}
+.history-table tr {
+    transition: background-color 0.2s ease;
+}
+.history-table tbody tr:hover {
+    background-color: rgba(139, 92, 246, 0.03);
+}
+
+/* FLOATING COMPARISON BAR */
+.comparison-bar {
+    position: fixed;
+    bottom: -100px;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(139, 92, 246, 0.15);
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.05);
+    z-index: 2000;
+    transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.comparison-bar.active {
+    bottom: 0;
+}
+
+/* COMPARISON MODAL */
+.comparison-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 3000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+.comparison-modal.active {
+    opacity: 1;
+    pointer-events: all;
+}
+.modal-card {
+    background: white;
+    width: 90%;
+    max-width: 900px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 30px;
+    transform: translateY(30px);
+    transition: transform 0.3s ease;
+    border: 1px solid rgba(139, 92, 246, 0.15);
+}
+.comparison-modal.active .modal-card {
+    transform: translateY(0);
+}
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 15px;
+}
+.modal-header h2 {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 800;
+    font-size: 24px;
+    color: #111827;
+}
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    color: var(--muted);
+    transition: color 0.2s;
+}
+.close-btn:hover {
+    color: var(--danger);
+}
+.comparison-table th, .comparison-table td {
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+}
+
+/* ===============================
+   DARK MODE OVERRIDES
+=================================*/
+body.dark, body.dark-mode {
+    --white: #1e1b4b; /* deep indigo/black */
+    --light: #0f172a; /* Slate 900 */
+    --border: #334155; /* Slate 700 */
+    --text: #f8fafc; /* Slate 50 */
+    --muted: #94a3b8; /* Slate 400 */
+    
+    background: linear-gradient(135deg, #0f172a, #1e1b4b, #0f172a);
+}
+
+body.dark::before, body.dark-mode::before {
+    background-image: 
+    radial-gradient(circle at 10% 20%, rgba(139,92,246,.15), transparent 25%),
+    radial-gradient(circle at 90% 10%, rgba(167,139,250,.18), transparent 25%);
+}
+
+/* Dark theme card/input adjustments */
+body.dark .card, body.dark-mode .card,
+body.dark .feature-card, body.dark-mode .feature-card,
+body.dark .stat-card, body.dark-mode .stat-card,
+body.dark .info-card, body.dark-mode .info-card,
+body.dark .resume-box, body.dark-mode .resume-box,
+body.dark .dashboard-stat, body.dark-mode .dashboard-stat,
+body.dark .candidate-card, body.dark-mode .candidate-card {
+    background: rgba(30, 41, 59, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+body.dark .nav, body.dark-mode .nav {
+    background: rgba(15, 23, 42, 0.85);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+body.dark h1, body.dark-mode h1,
+body.dark h2, body.dark-mode h2,
+body.dark h3, body.dark-mode h3,
+body.dark .card-name, body.dark-mode .card-name,
+body.dark .login-header h2, body.dark-mode .login-header h2 {
+    color: #f8fafc;
+}
+
+body.dark textarea, body.dark-mode textarea,
+body.dark input, body.dark-mode input,
+body.dark select, body.dark-mode select {
+    background: #1e293b;
+    border-color: #334155;
+    color: #f8fafc;
+}
+
+body.dark .btn-secondary, body.dark-mode .btn-secondary {
+    background: #1e293b;
+    color: #f8fafc;
+    border-color: #334155;
+}
+body.dark .btn-secondary:hover, body.dark-mode .btn-secondary:hover {
+    background: #334155;
+}
+
+body.dark .drop-zone, body.dark-mode .drop-zone {
+    background: #1e293b;
+    border-color: #4f46e5;
+}
+
+body.dark .modal-card, body.dark-mode .modal-card {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+body.dark .comparison-bar, body.dark-mode .comparison-bar {
+    background: rgba(30, 41, 59, 0.9);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+body.dark #comparison-count, body.dark-mode #comparison-count {
+    color: #f8fafc;
+}
+
+body.dark .loader-overlay, body.dark-mode .loader-overlay {
+    background: rgba(15, 23, 42, 0.9);
+}
+
+body.dark #loader-title, body.dark-mode #loader-title {
+    color: #f8fafc;
+}
+
+body.dark .timeline-item, body.dark-mode .timeline-item {
+    color: #f8fafc;
+    border-left: 2px solid #4f46e5;
+}
+
+body.dark .history-table tbody tr:hover, body.dark-mode .history-table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+body.dark .history-table, body.dark-mode .history-table {
+    border-color: #334155;
+}
+body.dark th, body.dark-mode th {
+    color: #94a3b8;
+}
+
